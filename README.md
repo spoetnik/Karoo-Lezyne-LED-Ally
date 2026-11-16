@@ -14,7 +14,10 @@ Bedien Lezyne Smart Connect-lampen vanaf een Hammerhead Karoo, zonder telefoon. 
 
 Push naar GitHub; de workflow **Build APK** bouwt `app-debug.apk` (artifact `lezyne-karoo-debug`).
 
-karoo-ext staat op GitHub Packages, en dat vereist altijd een token. De workflow gebruikt de standaard `GITHUB_TOKEN`. Krijg je 401/403 op `maven.pkg.github.com`, maak dan een *classic* Personal Access Token met alleen `read:packages`. Zet het als repo-secret `GPR_TOKEN` en pas de regel in `.github/workflows/build.yml` aan (staat erbij beschreven).
+karoo-ext staat op GitHub Packages, en dat vereist altijd een persoonlijk token (het standaard `GITHUB_TOKEN` geeft 401). Eenmalig instellen:
+
+1. GitHub → Settings → Developer settings → Personal access tokens → **Tokens (classic)** → *Generate new token (classic)*. Vink alleen `read:packages` aan.
+2. In deze repo: Settings → Secrets and variables → Actions → *New repository secret*, met naam `GPR_TOKEN` en het token als waarde.
 
 Lokaal bouwen: zet `gpr.user` en `gpr.key` (het token) in `~/.gradle/gradle.properties` en draai `./gradlew assembleDebug`.
 

@@ -4,6 +4,10 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: read   # nodig om karoo-ext van GitHub Packages te halen
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,7 +18,20 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
-      - run: chmod +x gradlew && ./gradlew assembleDebug --stacktrace
+      - name: Check token
+        env:
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+        run: |
+          if [ -z "$GPR_TOKEN" ]; then
+            echo "::error::Repo-secret GPR_TOKEN ontbreekt. Maak een classic PAT met alleen read:packages en zet hem onder Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+      - name: Build
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          # karoo-ext staat op GitHub Packages; het standaard GITHUB_TOKEN geeft daar 401.
+          GITHUB_TOKEN: ${{ secrets.GPR_TOKEN }}
+        run: chmod +x gradlew && ./gradlew assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: lezyne-karoo-debug
