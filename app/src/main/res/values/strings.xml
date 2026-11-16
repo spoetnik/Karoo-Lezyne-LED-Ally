@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lezyne Lights</string>
+    <string name="extension_name">Lezyne Lights</string>
+    <string name="dt_light">Lezyne licht</string>
+    <string name="dt_light_desc">Batterij en modus van je Lezyne-voorlicht. Tik links voor aan/uit, rechts voor de volgende modus.</string>
+</resources>

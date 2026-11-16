@@ -1,6 +1,8 @@
 # Lezyne Smart Connect – BLE-protocol
 
-Afgeleid uit de gedecompileerde LED Ally-app (`com.lezyne.lezyneledapp` v1.137). Nog **niet getest op echte hardware**: alles hieronder is wat de app doet, niet wat bevestigd werkt vanaf een Karoo.
+Afgeleid uit de gedecompileerde LED Ally-app (`com.lezyne.lezyneledapp` v1.137).
+
+**Getest op een Karoo 2 (16-11-2026):** dual-role verbinding, `0x00` status, `0x06` aan, `0x08` volgende modus en `0x0B` uit werken. De rest van dit document beschrijft wat de app doet, maar is nog niet zelf bevestigd.
 
 ## 1. Architectuur: dual-role (belangrijk!)
 
@@ -32,7 +34,7 @@ Geen bonding/pairing, geen encryptie, geen checksum, geen handshake gevonden.
 4. `discoverServices()` → notificaties aanzetten op `29580003` (CCCD `0x0100`).
 5. Wachten tot óók de lamp zich op onze server heeft geabonneerd (`onDescriptorWriteRequest` met `ENABLE_NOTIFICATION_VALUE`; altijd `sendResponse` sturen als `responseNeeded`).
 6. Pas als beide kanalen open zijn: ~1 s wachten en dan `GetStatusFront` (0x00) sturen.
-7. Status pollen: de app doet dit elke **600 s**. Statuswijzigingen komen ook als notificatie binnen.
+7. Status pollen: de app doet dit elke **600 s**. Statuswijzigingen komen mogelijk ook vanzelf als notificatie binnen (onbevestigd).
 
 Als de lamp de verbinding met onze GATT-server verbreekt, verbreekt de app ook de client-verbinding.
 
@@ -48,9 +50,9 @@ Enkelbyte, tenzij anders vermeld.
 | 0x03 | ModeSetRear | idem |
 | 0x04 | ModeTestFront | preview van één modus (payload onbekend) |
 | 0x05 | ModeTestRear | |
-| 0x06 | RunFront | waarschijnlijk "aan in huidige modus" (de app gebruikt 0x07 zo voor de achterlamp) – **testen** |
+| 0x06 | RunFront | aan in huidige modus (getest op Karoo 2) |
 | 0x07 | RunRear | achterlamp aan |
-| 0x08 | NextModeFront | volgende modus – interessant voor de Karoo-knop |
+| 0x08 | NextModeFront | volgende modus (getest op Karoo 2) |
 | 0x09 | NextModeRear | |
 | 0x0A | RearOff | |
 | 0x0B | FrontOff | |
@@ -134,9 +136,11 @@ De app zet een lamp aan door dit pakket te sturen, en kiest een modus door de in
 | 5 | flags (zelfde bits als status byte 5; `0x08` = uit) |
 | 6–9 | serienummer van de gekoppelde lamp u32 LE |
 
-## 9. Open punten om eerst te testen
+## 9. Open punten
 
-1. Kan een Karoo-extension een GATT-server openen, en abonneert de lamp zich daarop? Dit is het grootste risico.
-2. Accepteert de lamp een tweede centrale, of moet de telefoon ontkoppeld zijn?
-3. Wat doet 0x06 RunFront precies, en werkt 0x08 NextModeFront zonder eerst een ModeSet?
+1. ~~Kan een Karoo-extension een GATT-server openen?~~ Ja, werkt op de Karoo 2.
+2. Accepteert de lamp een tweede centrale, of moet de telefoon ontkoppeld zijn? (nog onbekend)
+3. ~~Wat doet 0x06 RunFront?~~ Zet aan in de huidige modus. ~~Werkt 0x08 zonder ModeSet?~~ Ja.
 4. Krijgen we de RearStatus door via de voorlamp als ze als combo gekoppeld zijn?
+5. Schakelt 0x06/0x0B in combo ook de achterlamp, of zijn 0x07/0x0A nodig? (de extension stuurt beide als er een achterlamp is)
+6. Pusht de lamp zelf een status bij een wijziging (bijv. als je de knop op de lamp gebruikt)?

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionInfo
+    displayName="@string/extension_name"
+    icon="@drawable/ic_lezyne"
+    id="lezyne"
+    scansDevices="false"
+    mapLayer="false"
+    fitFile="false">
+
+    <DataType
+        typeId="light"
+        displayName="@string/dt_light"
+        description="@string/dt_light_desc"
+        graphical="true"
+        icon="@drawable/ic_lezyne" />
+</ExtensionInfo>

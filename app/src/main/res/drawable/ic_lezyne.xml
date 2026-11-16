@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Eenvoudig koplamp-icoon: lamp met lichtbundel -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,8h7a4,4 0,0 1,0 8H3a1,1 0,0 1,-1 -1V9a1,1 0,0 1,1 -1z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M15,7.5l7,-2v2l-7,2zM15,11l7,0v2l-7,0zM15,14.5l7,2v2l-7,-2z" />
+</vector>

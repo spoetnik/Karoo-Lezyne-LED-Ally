@@ -1,41 +1,42 @@
-# Lezyne test-app voor Karoo 2
+# Lezyne Lights – Karoo-extension
 
-Minimale testapp om te controleren of de Karoo een Lezyne Smart Connect-lamp kan bedienen. Het is nog geen Karoo-extension: alleen een scherm met knoppen en een log. Zie `PROTOCOL.md` voor het protocol.
+Bedien Lezyne Smart Connect-lampen vanaf een Hammerhead Karoo, zonder telefoon. Getest op een Karoo 2. Zie `PROTOCOL.md` voor het Bluetooth-protocol.
+
+## Wat hij doet
+
+- **Dataveld "Lezyne licht"**: links staan aan/uit en de batterij (tik = aan/uit), rechts de huidige modus (tik = volgende modus).
+- **Automatisch aan bij schemer**: tijdens een rit gaat het licht aan zodra de zon onder 3° boven de horizon zakt, berekend uit je GPS-positie en de tijd. Bij daglicht (zon boven 5°) gaat hij weer uit. Dit gebeurt alleen bij de overgang tussen licht en donker; zet je zelf iets om, dan blijft dat zo (ook als de extension halverwege de rit herstart).
+- **Uit bij afsluiten**: als je de rit afsluit, gaat de lamp uit.
+- **Meldingen** bij een bijna lege batterij (1/5 of minder), een lege batterij of oververhitting.
+- **Verbinding** alleen tijdens een rit, of zolang het dataveld of de app open is. Daarna sluit hij na 1 minuut. De status wordt elke 5 minuten en na elke actie opgevraagd.
 
 ## Bouwen
 
-Via GitHub Actions, zonder dat je Android Studio nodig hebt:
+Push naar GitHub; de workflow **Build APK** bouwt `app-debug.apk` (artifact `lezyne-karoo-debug`).
 
-1. Maak een (privé) repo en push deze map.
-2. De workflow **Build APK** draait automatisch. Download het artifact `lezyne-karoo-debug` (een zip met `app-debug.apk`).
+karoo-ext staat op GitHub Packages, en dat vereist altijd een token. De workflow gebruikt de standaard `GITHUB_TOKEN`. Krijg je 401/403 op `maven.pkg.github.com`, maak dan een *classic* Personal Access Token met alleen `read:packages`. Zet het als repo-secret `GPR_TOKEN` en pas de regel in `.github/workflows/build.yml` aan (staat erbij beschreven).
 
-Lokaal kan ook: `./gradlew assembleDebug` (vereist JDK 17 en de Android SDK).
+Lokaal bouwen: zet `gpr.user` en `gpr.key` (het token) in `~/.gradle/gradle.properties` en draai `./gradlew assembleDebug`.
 
-## Installeren op de Karoo 2
+## Installeren
 
-1. Zet ontwikkelaarsopties en USB-debugging aan op de Karoo. Verbind hem met USB en controleer `adb devices`.
-2. `adb install -r app-debug.apk`
-3. Starten: `adb shell am start -n nl.nise.lezyne/.MainActivity`
-4. Accepteer de vraag om locatierechten. Op Android 8 is die nodig om Bluetooth te scannen.
+```
+adb install -r app-debug.apk
+adb shell am start -n nl.nise.lezyne/.MainActivity
+```
 
-## Testen
+Bij de eerste start vraagt de app om locatierechten. Die zijn op Android 8 nodig om Bluetooth te scannen. De app zoekt dan je voorlamp en onthoudt hem. Met "Andere lamp zoeken" kies je opnieuw.
 
-1. **Zet Bluetooth op je telefoon uit** (of sluit LED Ally geforceerd af), zodat de lamp vrij is.
-2. Zet de voorlamp aan.
-3. Tik **Zoek & verbind** en kijk mee in het log. Het verloop zou moeten zijn:
-   - `Service toegevoegd aan onze GATT-server`
-   - `Gevonden: …`
-   - `Verbonden (client)`
-   - `Notificaties van de lamp aan`
-   - `Lamp heeft zich op onze server geabonneerd` ← **dit is het spannende punt**
-   - `Beide kanalen open` en daarna een statusregel met batterij en modus
-4. Probeer daarna **Volgende (08)**, **Uit (0B)**, **Aan (06)** en **Status**.
-5. Via het hex-veld kun je ook andere commando's proberen (zie `PROTOCOL.md` §3). **Stuur nooit 10, 11 of 13**: dat zijn DFU en factory reset.
+Daarna, op de Karoo: zet het dataveld **Lezyne licht** op een ritpagina (graphical veld; het liefst minstens een halve breedte).
 
-## Log terugsturen
+## Problemen?
+
+Het log staat op de Karoo in een bestand:
 
 ```
 adb pull /sdcard/Android/data/nl.nise.lezyne/files/lezyne-log.txt
 ```
 
-Of live meekijken: `adb logcat -s LEZYNE`
+Live meekijken: `adb logcat -s LEZYNE`. Het log is ook zichtbaar in de app.
+
+Zet tijdens het rijden Bluetooth op je telefoon uit of sluit LED Ally af. Mogelijk accepteert de lamp maar één verbinding tegelijk.
