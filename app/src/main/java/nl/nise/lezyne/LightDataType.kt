@@ -20,6 +20,7 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
@@ -131,8 +132,8 @@ private fun LightView(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Value(if (f.on) "AAN" else "UIT", if (f.on) Green else Grey, big)
-            Label(batteryText(f.bars), batteryColor(f.bars), small)
-            state.rear?.let { r -> Label("achter " + batteryText(r.bars), batteryColor(r.bars), small * 0.85f) }
+            Battery(f.bars)
+            state.rear?.let { r -> Battery(r.bars) }
         }
         Box(modifier = GlanceModifier.width(1.dp).fillMaxHeight().background(Divider)) {}
         Column(
@@ -157,12 +158,22 @@ private fun connText(c: Conn) = when (c) {
     Conn.IDLE -> "tik = verbind"
 }
 
-private fun batteryText(bars: Int) = "▮".repeat(bars.coerceIn(0, 5)) + "▯".repeat(5 - bars.coerceIn(0, 5))
-
 private fun batteryColor(bars: Int) = when {
     bars <= 1 -> Red
     bars == 2 -> Amber
     else -> Green
+}
+
+@Composable
+private fun Battery(bars: Int) {
+    val lit = bars.coerceIn(0, 5)
+    val color = batteryColor(lit)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalAlignment = Alignment.CenterHorizontally) {
+        for (i in 0 until 5) {
+            if (i > 0) Box(modifier = GlanceModifier.width(2.dp).height(1.dp)) {}
+            Box(modifier = GlanceModifier.width(8.dp).height(10.dp).background(if (i < lit) color else Divider)) {}
+        }
+    }
 }
 
 @Composable

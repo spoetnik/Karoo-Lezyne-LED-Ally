@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -30,29 +31,38 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         LightManager.init(this)
 
+        val density = resources.displayMetrics.density
+        fun Int.dp() = (this * density).toInt()
+        fun card(color: String) = GradientDrawable().apply { setColor(Color.parseColor(color)); cornerRadius = 12 * density }
+        fun button(label: String, action: () -> Unit) = Button(this).apply {
+            text = label
+            textSize = 14f
+            isAllCaps = false
+            setTextColor(Color.WHITE)
+            background = card("#2A2A2A")
+            setOnClickListener { action() }
+        }
+        fun buttonLp() = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { setMargins(4.dp(), 0, 4.dp(), 0) }
+
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.BLACK)
-            setPadding(8, 8, 8, 8)
+            setPadding(12.dp(), 12.dp(), 12.dp(), 12.dp())
         }
 
         statusView = TextView(this).apply {
             setTextColor(Color.WHITE)
-            textSize = 16f
-            setPadding(4, 4, 4, 8)
+            textSize = 15f
+            setLineSpacing(0f, 1.25f)
+            background = card("#161616")
+            setPadding(16.dp(), 14.dp(), 16.dp(), 14.dp())
         }
-        root.addView(statusView)
+        root.addView(statusView, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = 12.dp() })
 
         fun row(vararg buttons: Pair<String, () -> Unit>) {
             val r = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-            for ((label, action) in buttons) {
-                r.addView(Button(this).apply {
-                    text = label
-                    textSize = 14f
-                    setOnClickListener { action() }
-                }, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f))
-            }
-            root.addView(r, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+            for ((label, action) in buttons) r.addView(button(label, action), buttonLp())
+            root.addView(r, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = 8.dp() })
         }
 
         row("Aan" to { LightManager.setOn(true) }, "Volgende" to { LightManager.nextMode() }, "Uit" to { LightManager.setOn(false) })
@@ -64,23 +74,26 @@ class MainActivity : Activity() {
             setTextColor(Color.WHITE)
             setHintTextColor(Color.GRAY)
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            background = card("#161616")
+            setPadding(16.dp(), 10.dp(), 16.dp(), 10.dp())
         }
-        hexRow.addView(hexInput, LinearLayout.LayoutParams(0, WRAP_CONTENT, 2f))
-        hexRow.addView(Button(this).apply {
-            text = "Stuur"
-            setOnClickListener {
-                val bytes = parseHex(hexInput.text.toString())
-                if (bytes == null) LightManager.log("Ongeldige hex") else LightManager.sendRaw(bytes)
-            }
-        }, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f))
-        root.addView(hexRow, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        hexRow.addView(hexInput, LinearLayout.LayoutParams(0, WRAP_CONTENT, 2f).apply { setMargins(0, 0, 4.dp(), 0) })
+        hexRow.addView(button("Stuur") {
+            val bytes = parseHex(hexInput.text.toString())
+            if (bytes == null) LightManager.log("Ongeldige hex") else LightManager.sendRaw(bytes)
+        }, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { setMargins(4.dp(), 0, 0, 0) })
+        root.addView(hexRow, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = 12.dp() })
 
         logView = TextView(this).apply {
-            setTextColor(Color.LTGRAY)
+            setTextColor(Color.parseColor("#9E9E9E"))
             textSize = 11f
             typeface = Typeface.MONOSPACE
+            setPadding(12.dp(), 10.dp(), 12.dp(), 10.dp())
         }
-        scroll = ScrollView(this).apply { addView(logView) }
+        scroll = ScrollView(this).apply {
+            background = card("#0E0E0E")
+            addView(logView)
+        }
         root.addView(scroll, LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f))
         setContentView(root)
 
